@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Created by Touhidul Islam, Mobile : +88 01787188885, Portfolio: https://zaap.bio/TouhidDesign">
+  <title>Image Sequence Autoplayer</title>
+  <style>
+    /* CSS Code */
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: transparent; /* Background is transparent */
+      position: relative; /* For absolute positioning of the overlay */
+    }
+
+    #image-container {
+      width: 300px; /* Canvas width */
+      height: 1500px; /* Canvas height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent; /* Background is transparent */
+      overflow: hidden; /* Hide anything outside the container */
+      position: relative; /* Needed for canvas positioning */
+    }
+
+    #canvas {
+      max-width: 100%;
+      max-height: 100%;
+      background: transparent; /* Canvas background transparent */
+    }
+
+    /* Invisible overlay that covers the entire page */
+    #clickable-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent; /* Transparent overlay */
+      z-index: 9999999999; /* Make sure it's on top of all other elements */
+    }
+  </style>
+</head>
+<body>
+  <!-- Invisible clickable overlay -->
+  <div id="clickable-overlay"></div>
+
+  <!-- Image Container -->
+  <div id="image-container">
+    <canvas id="canvas"></canvas> <!-- Canvas for drawing the image with watermark -->
+  </div>
+
+  <script>
+    /* JavaScript Code */
+    const encryptedWatermarkName = "VG91aGlkdWwgSXNsYW0="; 
+    const encryptedWatermarkUrl = "aHR0cHM6Ly96YWFwLmJpby9Ub3VoaWREZXNpZ24="; 
+    function decodeString(encrypted) {
+      return atob(encrypted);
+    }
+
+    const decryptedWatermarkName = decodeString(encryptedWatermarkName);
+    const decryptedWatermarkUrl = decodeString(encryptedWatermarkUrl);
+
+    if (decryptedWatermarkName !== "Touhidul Islam" || decryptedWatermarkUrl !== "https://zaap.bio/TouhidDesign") {
+      throw new Error("Code is corrupted. Watermark has been tampered with!");
+    }
+
+    const totalFrames = 60; // Total number of images in the sequence
+    const frameRate = 12; // Frames per second (12 FPS)
+    let currentFrame = 1;
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d'); // Get the 2D rendering context
+
+    // Set canvas size
+    canvas.width = 300;
+    canvas.height = 1500;
+
+
+    const watermarkX = canvas.width - 220;
+    const watermarkY = canvas.height - 20;
+    const watermarkColor = '#000000';
+
+    // Add event listener to detect click on the entire body
+    document.getElementById('clickable-overlay').addEventListener('click', function() {
+      // When the overlay is clicked, it opens the encrypted URL
+      window.open(decryptedWatermarkUrl, '_blank'); // Open the hyperlink
+    });
+
+    function loadAndDrawImage() {
+      const img = new Image(); // Create a new Image object
+      img.src = `./images/frame${currentFrame}.png`; // Set image source
+
+      img.onload = function() {
+        // Draw the image onto the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear any previous frames
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height); // Draw the image
+
+        // Draw the watermark text with the red color
+        ctx.font = '24px Arial';
+        ctx.fillStyle = watermarkColor; // Use the red color for the watermark
+        ctx.fillText(decryptedWatermarkName, watermarkX, watermarkY); // Position the watermark
+
+        // Ensure the watermark text is non-editable and non-removable (by overlaying the entire area with clickable overlay)
+        document.getElementById('clickable-overlay').style.pointerEvents = 'auto'; // Enable interaction for hyperlink area
+      };
+    }
+
+    function updateFrame() {
+      loadAndDrawImage();
+
+      // Increment frame
+      currentFrame++;
+
+      // Stop when the last frame is displayed
+      if (currentFrame > totalFrames) {
+        clearInterval(playback); // Stop the interval
+      }
+    }
+
+    // Start the sequence playback
+    const playback = setInterval(updateFrame, 1000 / frameRate);
+  </script>
+</body>
+</html>
